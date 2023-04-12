@@ -354,3 +354,65 @@ if not arguments.dont_remember:
 
     store_transcoding_results(actual_size, video_length, estimated_bitrate, h_aspect, v_aspect)
 
+# Load the video and obtain its duration and aspect ratio
+
+video_path = args.filename
+
+duration = ffmpeg.get_video_length(video_path)
+
+h_aspect, v_aspect = ffmpeg.get_video_aspect_ratio(video_path)
+
+# Create the input data for the model
+
+input_data = np.array([
+
+    [args.size, duration, h_aspect, v_aspect]
+
+])
+
+input_data = (input_data - mean) / std
+
+# Load the pre-trained model
+
+model = torch.load('model.pt')
+
+# Make a prediction using the model
+
+predicted_bitrate = model(torch.Tensor(input_data)).item()
+
+# Convert the video to the target bitrate and format
+
+output_path, actual_size = ffmpeg.convert_video(
+
+    video_path, args.output, predicted_bitrate, h_aspect, v_aspect
+
+)
+
+# Check if the actual file size exceeds the target size
+
+if actual_size > args.size:
+
+    print("Warning: Actual file size is larger than target size!")
+
+# Save the transcoding data for future use
+
+if not args.dont_remember:
+
+    dataset.save_transcoding_data(
+
+        actual_size=actual_size,
+
+        target_size=args.size,
+
+        duration=duration,
+
+        aspect_ratio=(h_aspect, v_aspect),
+
+        predicted_bitrate=predicted_bitrate
+
+    )
+normalized_input_data = (input_data - self.train_stats['mean']) / self.train_stats['std']
+
+return int(round(self.model.predict(normalized_input_data)[0][0]))
+
+
