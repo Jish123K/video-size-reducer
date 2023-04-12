@@ -180,3 +180,105 @@ def load_model(self, filename):
 
     self.model = keras.models.load_model(filename)
 
+class VideoSizer:
+
+def init(self):
+
+self.load_data()
+
+self.build_model()
+  def build_model(self):
+
+    self.model = keras.Sequential([
+
+        layers.Dense(64, activation=tf.nn.relu, input_shape=self.input_shape),
+
+        layers.Dense(32, activation=tf.nn.relu),
+
+        layers.Dense(16, activation=tf.nn.relu),
+
+        layers.Dense(8, activation=tf.nn.relu),
+
+        layers.Dense(4, activation=tf.nn.relu),
+
+        layers.Dense(2, activation=tf.nn.relu),
+
+        layers.Dense(1)
+
+    ])
+
+    optimizer = tf.keras.optimizers.RMSprop(0.001)
+
+    self.model.compile(loss=tf.losses.mean_squared_error, optimizer=optimizer,
+
+                       metrics=[tf.losses.mean_squared_error, 'mean_absolute_error'])
+
+def load_data(self):
+
+    ds = pd.read_csv('dataset/dataset.csv')
+
+    if ds['bitrate'].count() < 16:
+
+        raise dataset.InadequateDataError('Not enough data, please run ./generate_data.py')
+
+    test_dataset = ds.sample(16)
+
+    self.test_bitrate = test_dataset.pop('bitrate')
+
+    train_dataset = ds.drop(test_dataset.index)
+
+    self.train_bitrate = train_dataset.pop('bitrate')
+
+    self.train_stats = train_dataset.describe()
+
+    self.input_shape = (len(train_dataset.keys()),)
+
+    self.normalized_train_dataset = normalize_dataframe(train_dataset, self.train_stats)
+
+    self.normalized_test_dataset = normalize_dataframe(test_dataset, self.train_stats)
+
+def train(self, epochs=2000):
+
+    return self.model.fit(self.normalized_train_dataset, self.train_bitrate, epochs=epochs)
+
+def test(self):
+
+    result = self.model.evaluate(self.normalized_test_dataset, self.test_bitrate)
+
+    print(self.model.metrics_names)
+
+    print(result)
+
+def estimate(self, target_size, video_length, h_aspect, v_aspect):
+
+    input_data = pd.DataFrame(
+
+        data={
+
+            'output size in bytes': np.array([target_size]),
+
+            'length in seconds': np.array([video_length]),
+
+            'horizontal aspect': np.array([h_aspect]),
+
+            'vertical aspect': np.array([v_aspect])
+
+        },
+
+        columns=['output size in bytes', 'length in seconds', 'horizontal aspect', 'vertical aspect']
+
+    )
+
+    normalized_input_data = normalize_dataframe(input_data, self.train_stats)
+
+    return int(round(self.model.predict(normalized_input_data)[0][0]))
+
+def save_model(self, filename):
+
+    self.model.save(filename)
+
+def load_model(self, filename):
+
+    self.model = keras.models.load_model(filename)
+
+                   
