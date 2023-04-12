@@ -172,3 +172,11 @@ class VideoSizer():
 normalized_input_data = normalize_dataframe(input_data, self.train_stats)
 
 return int(round(self.model.predict(normalized_input_data)[0][0]))
+def save_model(self, filename):
+
+    self.model.save(filename)
+
+def load_model(self, filename):
+
+    self.model = keras.models.load_model(filename)
+
