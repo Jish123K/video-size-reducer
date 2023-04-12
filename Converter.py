@@ -300,3 +300,57 @@ parser.add_argument('-d', '--dont-remember', help="don't remember the results of
 parser.add_argument('-m', '--model', help='machine learning model to use', type=str, default='keras', required=False, choices=['keras', 'pytorch', 'scikit'])
 
 arguments = parser.parse_args()
+# Load video metadata
+
+video_length, h_aspect, v_aspect = get_video_metadata(arguments.filename)
+
+# Instantiate the appropriate ML model
+
+if arguments.model == 'keras':
+
+    model = KerasVideoSizeEstimator()
+
+elif arguments.model == 'pytorch':
+
+    model = PytorchVideoSizeEstimator()
+
+elif arguments.model == 'scikit':
+
+    model = ScikitVideoSizeEstimator()
+
+else:
+
+    raise ValueError('Invalid model type specified')
+
+# Train the model on the dataset
+
+model.train(arguments.epochs)
+
+# Test the model
+
+model.test()
+
+# Estimate the bitrate required to achieve the target file size
+
+estimated_bitrate = model.estimate(arguments.size, video_length, h_aspect, v_aspect)
+
+# Print the estimated bitrate
+
+print(f"Estimated bitrate: {estimated_bitrate} kbps")
+
+# Transcode the video to the estimated bitrate
+
+output_path, actual_size = transcode_video(arguments.filename, arguments.output, estimated_bitrate)
+
+# Check if the actual file size is larger than the target file size
+
+if actual_size > arguments.size:
+
+    print("Actual file size is larger than target file size!")
+
+# Store the transcoding results in the dataset
+
+if not arguments.dont_remember:
+
+    store_transcoding_results(actual_size, video_length, estimated_bitrate, h_aspect, v_aspect)
+
