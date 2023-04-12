@@ -281,4 +281,22 @@ def load_model(self, filename):
 
     self.model = keras.models.load_model(filename)
 
-                   
+                   if name == 'main':
+
+description = ('Make a video fit a specified file size restriction')
+
+parser = argparse.ArgumentParser(description=description)
+
+parser.add_argument('filename', help='path to input video file', type=str)
+
+parser.add_argument('size', help='target file size in bytes', type=int)
+
+parser.add_argument('-o', '--output', help='output file path', type=str, default=None, required=False)
+
+parser.add_argument('-e', '--epochs', help='number of epochs for training', type=int, default=2000, required=False)
+
+parser.add_argument('-d', '--dont-remember', help="don't remember the results of this transcode", type=bool, default=False, required=False)
+
+parser.add_argument('-m', '--model', help='machine learning model to use', type=str, default='keras', required=False, choices=['keras', 'pytorch', 'scikit'])
+
+arguments = parser.parse_args()
