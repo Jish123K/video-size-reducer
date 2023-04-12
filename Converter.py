@@ -165,4 +165,10 @@ class VideoSizer():
             },
 
             columns=['output size in bytes', 'length in seconds
+', 'horizontal aspect', 'vertical aspect']
 
+)
+
+normalized_input_data = normalize_dataframe(input_data, self.train_stats)
+
+return int(round(self.model.predict(normalized_input_data)[0][0]))
